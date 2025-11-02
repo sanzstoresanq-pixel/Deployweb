@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sanz Cloud — Deploy Instan</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: "Inter", sans-serif;
+      background: radial-gradient(circle at 30% 30%, #6b5cff, #4e3ae6);
+      color:#fff;
+      margin:0;
+      padding:20px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      min-height:100vh;
+    }
+    .card {
+      background:#fff;
+      border-radius:20px;
+      padding:25px 20px;
+      box-shadow:0 6px 30px rgba(0,0,0,0.15);
+      width:100%;
+      max-width:420px;
+      color:#1b1f2a;
+      text-align:center;
+      position:relative;
+    }
+    h1 {
+      font-size:28px;
+      margin-bottom:8px;
+      color:white;
+      text-shadow:0 2px 6px rgba(0,0,0,0.3);
+    }
+    h2 {
+      color:#4e3ae6;
+      margin-top:0;
+    }
+    .btn {
+      background:linear-gradient(90deg,#5b45ff,#836bff);
+      color:white;
+      border:none;
+      border-radius:12px;
+      padding:14px;
+      font-weight:700;
+      cursor:pointer;
+      width:100%;
+      margin-top:15px;
+      transition:0.2s;
+    }
+    .btn:hover { opacity:0.9; }
+    input[type="text"], input[type="file"] {
+      width:100%;
+      margin-top:10px;
+      padding:12px;
+      border-radius:10px;
+      border:1px solid #ddd;
+      font-size:15px;
+    }
+    .info {
+      text-align:center;
+      margin-top:10px;
+      color:#333;
+      font-size:14px;
+      min-height:20px;
+    }
+    .bar-container {
+      background:#eee;
+      border-radius:10px;
+      height:10px;
+      width:100%;
+      margin-top:15px;
+      overflow:hidden;
+      display:none;
+    }
+    .bar {
+      background:linear-gradient(90deg,#6a5cff,#8e7bff);
+      height:100%;
+      width:0%;
+      border-radius:10px;
+      transition:width 0.3s ease;
+    }
+    footer {
+      margin-top:20px;
+      font-size:13px;
+      opacity:0.8;
+    }
+    a {
+      color:#4e3ae6;
+      text-decoration:none;
+      font-weight:600;
+    }
+  </style>
+</head>
+<body>
+  <h1>☁️ Sanz Cloud</h1>
+
+  <div class="card">
+    <h2>🚀 Deploy Website Baru</h2>
+    <label>Nama Website</label>
+    <input id="site-name" type="text" placeholder="contoh: projectku">
+    <label>Unggah File HTML</label>
+    <input id="file" type="file" accept=".html,.htm">
+
+    <div class="bar-container" id="bar-box">
+      <div class="bar" id="bar"></div>
+    </div>
+
+    <button class="btn" id="deploy">Buat & Deploy</button>
+    <div class="info" id="info">Belum ada aksi</div>
+  </div>
+
+  <footer>© 2025 Sanz Cloud</footer>
+
+  <script>
+    const btn = document.getElementById('deploy');
+    const info = document.getElementById('info');
+    const barBox = document.getElementById('bar-box');
+    const bar = document.getElementById('bar');
+
+    function simulateProgress() {
+      barBox.style.display = 'block';
+      bar.style.width = '0%';
+      let p = 0;
+      const timer = setInterval(() => {
+        p += Math.random() * 15;
+        if (p >= 100) { p = 100; clearInterval(timer); }
+        bar.style.width = p + '%';
+      }, 400);
+      return timer;
+    }
+
+    btn.addEventListener('click', async () => {
+      const name = document.getElementById('site-name').value.trim();
+      const file = document.getElementById('file').files[0];
+      if (!name || !file) {
+        info.textContent = '⚠️ Isi nama & pilih file HTML dulu!';
+        return;
+      }
+
+      const form = new FormData();
+      form.append('name', name);
+      form.append('file', file);
+
+      info.textContent = '⏳ Sedang deploy...';
+      const progressTimer = simulateProgress();
+
+      try {
+        const res = await fetch('/api/deploy', { method: 'POST', body: form });
+        const data = await res.json();
+        clearInterval(progressTimer);
+        bar.style.width = '100%';
+        if (data.url) {
+          info.innerHTML = `✅ Sukses! Website siap di: <a href="${data.url}" target="_blank">${data.url}</a>`;
+        } else {
+          info.textContent = '❌ Gagal: ' + (data.error || 'unknown');
+        }
+      } catch (e) {
+        clearInterval(progressTimer);
+        info.textContent = '❌ Gagal kirim ke server.';
+      }
+    });
+  </script>
+</body>
+</html>
